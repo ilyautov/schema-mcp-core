@@ -64,4 +64,7 @@ pip install schema-mcp-core
 [**business-mcp-ru**](https://github.com/ilyautov/business-mcp-ru) и пять его
 серверов: hh.ru, VK, Диадок, СБИС, Честный знак.
 
+Остальные проекты одним списком, разобранные по назначению:
+[ilyautov.github.io](https://ilyautov.github.io/).
+
 MIT.
