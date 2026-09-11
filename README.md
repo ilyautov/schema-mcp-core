@@ -1,4 +1,4 @@
-# ru-mcp-core
+# schema-mcp-core
 
 Основа для MCP-серверов над российскими деловыми API. Сам по себе ничего не
 подключает: сервер приносит каталог методов (`endpoints.yaml`) и тонкий
@@ -33,9 +33,9 @@
 
 ```python
 from mcp.server.fastmcp import FastMCP
-from ru_mcp_core.client import MarketplaceClient, ServiceConfig
-from ru_mcp_core.registry import Catalog
-from ru_mcp_core.tools import register_generic_tools
+from schema_mcp_core.client import MarketplaceClient, ServiceConfig
+from schema_mcp_core.registry import Catalog
+from schema_mcp_core.tools import register_generic_tools
 
 catalog = Catalog.from_yaml(Path(__file__).parent / "endpoints.yaml")
 config = ServiceConfig(service="hh", base_url="https://api.hh.ru", ...)
@@ -54,7 +54,7 @@ register_generic_tools(mcp, prefix="hh", catalog=catalog, client_factory=...)
 ## Установка
 
 ```
-pip install ru-mcp-core
+pip install schema-mcp-core
 ```
 
 MIT. Автор [Илья Утов](https://github.com/ilyautov).

@@ -15,7 +15,7 @@ import stat
 
 import pytest
 
-from ru_mcp_core.credentials import CredentialStore
+from schema_mcp_core.credentials import CredentialStore
 
 
 def _store(tmp_path):

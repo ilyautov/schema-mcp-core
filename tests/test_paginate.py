@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import asyncio
 
-from ru_mcp_core.paginate import fetch_all
-from ru_mcp_core.registry import EndpointSpec
+from schema_mcp_core.paginate import fetch_all
+from schema_mcp_core.registry import EndpointSpec
 
 
 class _FakeClient:

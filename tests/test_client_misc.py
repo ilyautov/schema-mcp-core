@@ -5,8 +5,8 @@ import asyncio
 
 import httpx
 
-from ru_mcp_core.client import MarketplaceClient, ServiceConfig
-from ru_mcp_core.registry import EndpointSpec
+from schema_mcp_core.client import MarketplaceClient, ServiceConfig
+from schema_mcp_core.registry import EndpointSpec
 
 
 def _route(monkeypatch, handler):

@@ -15,7 +15,7 @@ import asyncio
 import httpx
 import pytest
 
-from ru_mcp_core.client import MarketplaceClient, ServiceConfig, _parse_retry_after
+from schema_mcp_core.client import MarketplaceClient, ServiceConfig, _parse_retry_after
 
 
 def _static_config(**over) -> ServiceConfig:
@@ -61,7 +61,7 @@ def _route(monkeypatch, handler):
 def _no_sleep(monkeypatch):
     async def instant(_):
         return None
-    monkeypatch.setattr("ru_mcp_core.client.asyncio.sleep", instant)
+    monkeypatch.setattr("schema_mcp_core.client.asyncio.sleep", instant)
 
 
 # --- host allowlist ---------------------------------------------------------

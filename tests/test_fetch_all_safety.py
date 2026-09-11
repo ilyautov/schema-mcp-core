@@ -13,9 +13,9 @@ import json
 
 from mcp.server.fastmcp import FastMCP
 
-from ru_mcp_core.client import MarketplaceClient, ServiceConfig
-from ru_mcp_core.registry import Catalog, EndpointSpec
-from ru_mcp_core.tools import register_generic_tools
+from schema_mcp_core.client import MarketplaceClient, ServiceConfig
+from schema_mcp_core.registry import Catalog, EndpointSpec
+from schema_mcp_core.tools import register_generic_tools
 
 
 def _call(mcp, name, args):

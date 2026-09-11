@@ -13,7 +13,7 @@ a live probe failed.
 
 Called from a server package::
 
-    from ru_mcp_core.doctor import main as doctor_main
+    from schema_mcp_core.doctor import main as doctor_main
     raise SystemExit(doctor_main([("hh", "hh.ru", "hh_mcp.server")], argv, "hh-mcp"))
 """
 from __future__ import annotations

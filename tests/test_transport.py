@@ -1,7 +1,7 @@
 """Transport selection: stdio by default, Streamable HTTP only when asked.
 
 Uses a stand-in for FastMCP so the test never opens a port. The stand-in
-mirrors the two things ``ru_mcp_core.transport`` touches: ``.settings`` (host, port,
+mirrors the two things ``schema_mcp_core.transport`` touches: ``.settings`` (host, port,
 transport_security) and ``.run(transport=...)``.
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from ru_mcp_core import transport  # noqa: E402
+from schema_mcp_core import transport  # noqa: E402
 
 
 class FakeMCP:
