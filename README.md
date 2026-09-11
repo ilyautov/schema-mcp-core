@@ -57,4 +57,11 @@ register_generic_tools(mcp, prefix="hh", catalog=catalog, client_factory=...)
 pip install schema-mcp-core
 ```
 
-MIT. Автор [Илья Утов](https://github.com/ilyautov).
+## Кто это сделал
+
+[Илья Утов](https://github.com/ilyautov), лаборатория
+[AI Frontier](https://aifrontier.tech). На этом ядре собраны
+[**business-mcp-ru**](https://github.com/ilyautov/business-mcp-ru) и пять его
+серверов: hh.ru, VK, Диадок, СБИС, Честный знак.
+
+MIT.
