@@ -17,6 +17,8 @@ from typing import Any
 
 import yaml
 
+from .text import stem, tokens as _tokens
+
 _DEFAULT_PATH = Path(__file__).resolve().parent / "entities.yaml"
 
 # RU/EN filler words that carry no routing signal.
@@ -34,10 +36,21 @@ class EntityIndex:
         self.stopwords = STOPWORDS
         # synonym phrase -> entity key (lowercased)
         self._syn: dict[str, str] = {}
+        # Односложные синонимы сверяются ОСНОВОЙ, а не буквой в букву: раздел
+        # называется «Вакансии», спрашивают «вакансию», и без стемминга раздел
+        # не находится ни разу.
+        self._syn_stem: dict[str, str] = {}
         for e in entities:
-            self._syn[e["key"].lower()] = e["key"]
+            self._syn.setdefault(e["key"].lower(), e["key"])
+            self._syn_stem.setdefault(stem(e["key"]), e["key"])
             for syn in e.get("synonyms", []):
-                self._syn[syn.lower()] = e["key"]
+                low = syn.lower()
+                self._syn.setdefault(low, e["key"])
+                if " " not in low:
+                    # Первый победил: файл отсортирован по числу методов, и
+                    # «документы» должны вести в раздел документов, а не в
+                    # полку файлов, которая упоминает то же слово в названии.
+                    self._syn_stem.setdefault(stem(low), e["key"])
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> "EntityIndex":
@@ -69,12 +82,13 @@ class EntityIndex:
         - entity keys: any synonym phrase contained in the query maps to its entity.
         """
         q = query.lower()
-        tokens = [t for t in re.split(r"[^\w]+", q) if t and t not in self.stopwords]
+        tokens = [t for t in _tokens(q) if t not in self.stopwords]
         keys: set[str] = set()
         for syn, key in self._syn.items():
-            if " " in syn:
-                if syn in q:
-                    keys.add(key)
-            elif syn in tokens:
+            if " " in syn and syn in q:
+                keys.add(key)
+        for t in tokens:
+            key = self._syn_stem.get(stem(t))
+            if key:
                 keys.add(key)
         return tokens, keys

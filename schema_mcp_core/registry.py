@@ -28,6 +28,8 @@ from urllib.parse import quote
 
 import yaml
 
+from .text import concepts, stem, stems, tokens, wants_write
+
 
 @dataclass
 class EndpointSpec:
@@ -91,6 +93,7 @@ class Catalog:
         self.default_host = default_host
         self.entities: Optional[Any] = entities  # EntityIndex | None — used by search()
         self._by_id: dict[str, EndpointSpec] = {}
+        self._stem_index: dict[str, dict[str, set[str]]] = {}
         for s in specs:
             if not s.host:
                 s.host = default_host
@@ -123,37 +126,79 @@ class Catalog:
     def in_section(self, section: str) -> list[EndpointSpec]:
         return [s for s in self._by_id.values() if s.section == section]
 
-    def search(self, query: str, limit: int = 15) -> list[EndpointSpec]:
-        """Token-overlap scoring with optional entity awareness.
+    # Вес поля в оценке. Summary написан для человека, поэтому совпадение в нём
+    # значит больше, чем совпадение в пути или в служебном scope.
+    _FIELD_WEIGHTS = (("summary", 2.0), ("name", 1.5), ("keywords", 1.0),
+                      ("scope", 0.5))
 
-        When an EntityIndex is attached, stopwords are stripped from the query
-        and a spec whose entity matches the query's entity gets a strong boost.
-        Falls back to plain token overlap when no index is present.
+    def _index(self, spec: EndpointSpec) -> dict[str, set[str]]:
+        """Основы слов по полям, считаются один раз на метод."""
+        cached = self._stem_index.get(spec.operation_id)
+        if cached is None:
+            cached = {
+                "summary": stems(spec.summary),
+                "name": stems(spec.operation_id) | stems(spec.path) | stems(spec.section),
+                "keywords": stems(" ".join(spec.keywords)),
+                "scope": stems(spec.scope),
+            }
+            self._stem_index[spec.operation_id] = cached
+        return cached
+
+    def search(self, query: str, limit: int = 15) -> list[EndpointSpec]:
+        """Поиск по каталогу: основы слов, веса полей и доля покрытия запроса.
+
+        Считается не «сколько раз слово встретилось», а «сколько слов запроса
+        вообще нашлось»: запрос из двух слов, у которого совпало оба, обязан
+        стоять выше того, где совпало одно, даже если это одно встретилось
+        трижды. Без этого «поиск вакансий» отдавал случайный метод из двадцати
+        с одинаковой оценкой 1.0.
         """
         if self.entities is not None:
-            terms, entity_keys = self.entities.expand(query)
+            raw_terms, entity_keys = self.entities.expand(query)
         else:
-            terms = [t for t in re.split(r"[^\w]+", query.lower()) if t]
+            raw_terms = [t for t in tokens(query)]
             entity_keys = set()
-        if not terms and not entity_keys:
+        groups = concepts(raw_terms)
+        if not groups and not entity_keys:
             return []
-        scored: list[tuple[float, EndpointSpec]] = []
+        # «Покажи документы» и «подпиши документ» это разные намерения: во
+        # втором случае читающий метод не ответ.
+        write_intent = wants_write(raw_terms)
+        scored: list[tuple[float, float, EndpointSpec]] = []
         for s in self._by_id.values():
-            hay = " ".join(
-                [s.operation_id, s.summary, s.path, s.section, s.scope]
-                + s.keywords
-            ).lower()
+            idx = self._index(s)
             score = 0.0
-            for t in terms:
-                if t in hay:
-                    score += 1.0
-                if t in s.operation_id.lower():
-                    score += 0.5
-                if t == s.section.lower():
-                    score += 0.5
+            hit = 0
+            for group in groups:
+                best = 0.0
+                for field_name, weight in self._FIELD_WEIGHTS:
+                    pool = idx[field_name]
+                    for term in group:
+                        if term in pool:
+                            best = max(best, weight)
+                        elif len(term) >= 5 and any(h.startswith(term) for h in pool):
+                            # «документ» и «документооборот» для спрашивающего
+                            # одно и то же. Порог в пять букв: на коротком корне
+                            # приставка цепляет чужие слова.
+                            best = max(best, weight * 0.75)
+                if best:
+                    hit += 1
+                    score += best
             if entity_keys and set(s.entity) & entity_keys:
-                score += 2.0  # entity match dominates incidental token hits
-            if score > 0:
-                scored.append((score, s))
-        scored.sort(key=lambda x: x[0], reverse=True)
-        return [s for _, s in scored[:limit]]
+                score += 3.0  # раздел, названный своим именем, важнее случайных совпадений
+            if not score:
+                continue
+            if groups:
+                score += 2.0 * hit / len(groups)  # покрытие запроса, а не частота
+            # Разрыв ничьих: читающий метод полезнее пишущего, когда спрашивают
+            # «как посмотреть», а короткий путь общее длинного с тремя {id}.
+            # Намерение это не разрыв ничьих, а полноценный сигнал: на «опубликуй
+            # вакансию» список опубликованных вакансий совпадает со словами
+            # запроса лучше, чем метод публикации, и без надбавки выигрывает его.
+            prefers = s.safety != "read" if write_intent else s.safety == "read"
+            if prefers:
+                score += 1.0
+            tie = -0.1 * len(s.path_params)
+            scored.append((score, tie, s))
+        scored.sort(key=lambda x: (x[0], x[1], -len(x[2].path)), reverse=True)
+        return [s for _, _, s in scored[:limit]]
