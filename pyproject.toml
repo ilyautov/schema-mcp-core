@@ -1,0 +1,31 @@
+[project]
+name = "ru-mcp-core"
+version = "0.1.0"
+description = "Shared core for schema-driven MCP servers over Russian business APIs: catalog, safety gating, HTTP client, credential store"
+keywords = ["mcp", "model-context-protocol", "openapi", "catalog", "russia", "claude"]
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Ilya Utov" }]
+dependencies = [
+    # Верхние границы намеренно: mcp 2.x переименовал FastMCP (mcp.server.fastmcp
+    # исчез) и ломает любую свежую установку. httpx 1.x и pyyaml 7 держим так же.
+    "mcp>=1.2,<2",
+    "httpx>=0.27,<1",
+    "pyyaml>=6.0,<7",
+]
+
+[project.urls]
+Repository = "https://github.com/ilyautov/ru-mcp-core"
+Issues = "https://github.com/ilyautov/ru-mcp-core/issues"
+Changelog = "https://github.com/ilyautov/ru-mcp-core/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["ru_mcp_core"]
