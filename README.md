@@ -4,8 +4,7 @@
 подключает: сервер приносит каталог методов (`endpoints.yaml`) и тонкий
 `server.py`, всё остальное берёт отсюда.
 
-Так устроены [hh-mcp-ru](https://github.com/ilyautov/hh-mcp-ru),
-[diadoc-mcp-ru](https://github.com/ilyautov/diadoc-mcp-ru),
+Так устроены [diadoc-mcp-ru](https://github.com/ilyautov/diadoc-mcp-ru),
 [sbis-mcp-ru](https://github.com/ilyautov/sbis-mcp-ru),
 [chestny-znak-mcp-ru](https://github.com/ilyautov/chestny-znak-mcp-ru) и
 [vk-mcp-ru](https://github.com/ilyautov/vk-mcp-ru).
@@ -25,9 +24,9 @@
 
 ## Зачем отдельный пакет
 
-Ядро это 2 200 строк, а сервер поверх него 66. Пять серверов, живущих
-отдельными репозиториями, иначе несли бы пять копий одного кода, и правка
-безопасности в одном месте оставляла бы четыре непочиненных.
+Ядро это 2 200 строк, а сервер поверх него 66. Четыре сервера, живущих
+отдельными репозиториями, иначе несли бы четыре копии одного кода, и правка
+безопасности в одном месте оставляла бы три непочиненных.
 
 ## Минимальный сервер
 
@@ -38,12 +37,12 @@ from schema_mcp_core.registry import Catalog
 from schema_mcp_core.tools import register_generic_tools
 
 catalog = Catalog.from_yaml(Path(__file__).parent / "endpoints.yaml")
-config = ServiceConfig(service="hh", base_url="https://api.hh.ru", ...)
-mcp = FastMCP("hh-mcp-ru")
-register_generic_tools(mcp, prefix="hh", catalog=catalog, client_factory=...)
+config = ServiceConfig(name="vk", scheme="https", ...)
+mcp = FastMCP("vk-mcp-ru")
+register_generic_tools(mcp, prefix="vk", catalog=catalog, client_factory=...)
 ```
 
-Живой пример с авторизацией и кабинетами лежит в любом из пяти серверов выше.
+Живой пример с авторизацией и кабинетами лежит в любом из четырёх серверов выше.
 
 ## Что ядро НЕ делает
 
@@ -61,8 +60,8 @@ pip install schema-mcp-core
 
 [Илья Утов](https://github.com/ilyautov), лаборатория
 [AI Frontier](https://aifrontier.tech). На этом ядре собраны
-[**business-mcp-ru**](https://github.com/ilyautov/business-mcp-ru) и пять его
-серверов: hh.ru, VK, Диадок, СБИС, Честный знак.
+[**business-mcp-ru**](https://github.com/ilyautov/business-mcp-ru) и четыре его
+сервера: VK, Диадок, СБИС, Честный знак.
 
 Остальные проекты одним списком, разобранные по назначению:
 [ilyautov.github.io](https://ilyautov.github.io/).
